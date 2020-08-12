@@ -1,0 +1,338 @@
+openapi: 3.0.0
+info:
+  title: main
+  version: '1.0'
+  description: ''
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /weather/today:
+    get:
+      summary: Погода на сегодня
+      tags:
+        - weather
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  current:
+                    type: object
+                    description: Данные о погоде на сегодня
+                    required:
+                      - weather
+                    properties:
+                      date:
+                        type: number
+                        description: Дата и время
+                      weather:
+                        $ref: '#/components/schemas/WeatherDescription'
+                      temp:
+                        type: number
+                        description: Температура
+                      indicators:
+                        $ref: '#/components/schemas/WeatherIndicators'
+                  daily:
+                    type: array
+                    description: Посуточная температура на следующие дни
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: number
+                          description: Дата и время
+                        weather:
+                          $ref: '#/components/schemas/WeatherDescription'
+                        temp:
+                          $ref: '#/components/schemas/TemperatureRange'
+                required:
+                  - current
+      operationId: get-whether
+      description: Получение информации о погоде на сегодня
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: city
+          description: Идентифиатор города
+    parameters: []
+  /weather/hourly:
+    get:
+      summary: Почасовая погода
+      tags:
+        - weather
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: number
+                          description: Дата и время
+                        weather:
+                          $ref: '#/components/schemas/WeatherDescription'
+                        temp:
+                          type: number
+                          description: Температура
+                        indicators:
+                          $ref: '#/components/schemas/WeatherIndicators'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+              examples: {}
+      operationId: get-weather-hourly
+      parameters:
+        - schema:
+            type: integer
+          in: query
+          name: page
+          description: Страница
+        - schema:
+            type: integer
+          in: query
+          name: page_size
+          description: Количество элементов на странице
+        - schema:
+            type: string
+          in: query
+          name: city
+          description: Идентификатор города
+      description: Получение информации о погоде с детализацией до часа
+    parameters: []
+  /weather/week:
+    get:
+      summary: Погода на неделю
+      tags:
+        - weather
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: number
+                          description: Дата и время
+                        weather:
+                          $ref: '#/components/schemas/WeatherDescription'
+                        temp_range:
+                          $ref: '#/components/schemas/TemperatureRange'
+                        indicators:
+                          $ref: '#/components/schemas/WeatherIndicators'
+      operationId: get-weather-daily
+      description: Получение информации о погоде на неделю
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: city
+          description: Идентификатор города
+    parameters: []
+  /weather/settings:
+    get:
+      summary: Настройки погоды пользователя
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+              examples:
+                example:
+                  value:
+                    main:
+                      country:
+                        id: string
+                        name: string
+                      city:
+                        id: string
+                        name: string
+                    favorites:
+                      - country:
+                          id: string
+                          name: string
+                        city:
+                          id: string
+                          name: string
+      operationId: get-weather-settings
+      description: Получение настроек погоды для текущего пользователя
+    post:
+      summary: Изменение настроек пользователя
+      operationId: post-weather-settings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+      description: Изменение настроек пользователя
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                place:
+                  type: object
+                  properties:
+                    main:
+                      type: integer
+                      description: Идентификатор города
+                    favorites:
+                      type: array
+                      description: Список идентификаторов городов
+                      items:
+                        type: integer
+components:
+  schemas:
+    WeatherDescription:
+      title: Weather
+      type: object
+      properties:
+        icon:
+          type: integer
+          description: Индекс иконки погоды
+        description:
+          type: string
+          description: Описание погоды
+    City:
+      title: City
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      description: ''
+    Country:
+      title: Country
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    PaginationMeta:
+      title: PaginationMeta
+      type: object
+      description: ''
+      properties:
+        objects_count:
+          type: integer
+          description: 'Количество элементов, полученных в ответе'
+        objects_total:
+          type: number
+          description: Всего элементов
+        pages_count:
+          type: integer
+          description: Всего страниц
+        page_number:
+          type: integer
+          description: Номер страницы
+    TemperatureRange:
+      title: TemperatureRange
+      type: object
+      properties:
+        min:
+          type: number
+          description: Минимальная температура
+        max:
+          type: number
+          description: Максимальная температура
+    WeatherIndicators:
+      title: WeatherIndicators
+      type: object
+      properties:
+        feels_like:
+          type: number
+          description: Ощущается как
+        humidity:
+          type: number
+          description: Влажность
+        pressure:
+          type: number
+          description: Давление
+        wind_gust:
+          type: number
+          description: Скорость ветра
+        wind_deg:
+          type: string
+          description: Направление ветра
+    Weather:
+      title: Weather
+      type: object
+      properties:
+        date:
+          type: number
+          description: Дата и время
+        weather:
+          $ref: '#/components/schemas/WeatherDescription'
+        temp:
+          type: number
+          description: Температура
+        temp_range:
+          type: object
+          description: Диапазон температур
+          properties:
+            min:
+              type: number
+              description: Минимальная
+            max:
+              type: number
+              description: Максимальная
+        indicators:
+          $ref: '#/components/schemas/WeatherIndicators'
+      required:
+        - date
+        - weather
+    Place:
+      title: Place
+      type: object
+      properties:
+        country:
+          $ref: '#/components/schemas/Country'
+        city:
+          $ref: '#/components/schemas/City'
+    Settings:
+      title: Settings
+      type: object
+      properties:
+        place:
+          type: object
+          properties:
+            main:
+              $ref: '#/components/schemas/Place'
+            favorites:
+              type: array
+              items:
+                $ref: '#/components/schemas/Place'
+        '':
+          type: string
+tags:
+  - name: weather
